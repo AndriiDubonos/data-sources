@@ -12,7 +12,7 @@ from data_sources.operations_results import BaseOperationResult
 class LimitToIdsQuerySet(ModifyQuerySet):
     def __init__(
         self,
-        limit_to_ids: BaseOperationParam[Iterable[str] | QuerySet[UUID]],
+        limit_to_ids: BaseOperationParam[Iterable[str | UUID] | QuerySet[UUID]],
         queryset: BaseOperationParam[QuerySet] | None = None,
         result: BaseOperationResult | None = None,
     ):

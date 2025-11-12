@@ -1,7 +1,7 @@
 [project]
-name = "data-sources"
+name = "a-data-source"
 version = "0.1.0"
-description = "Add your description here"
+description = "Data sources is module for simplifying data fetching and processing"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = []

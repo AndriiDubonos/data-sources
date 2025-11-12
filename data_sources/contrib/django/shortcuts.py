@@ -3,7 +3,9 @@ from __future__ import annotations
 from typing import Any, Iterator, Optional, Iterable
 from uuid import UUID
 
-import data_sources.contrib
+from django.db.models import QuerySet
+
+from data_sources.contrib.django.keys import QUERYSET
 from data_sources.contrib.django.operations.fetch_entities import (
     AllFetchQuerySet,
     SingleFetchQuerySet,
@@ -11,11 +13,15 @@ from data_sources.contrib.django.operations.fetch_entities import (
     ExistsFetchQuerySet,
     CountFetchQuerySet,
 )
+from data_sources.contrib.django.operations.modify_queryset.iterator import QuerySetIterator
+from data_sources.contrib.django.operations.modify_queryset.limit_to_ids import LimitToIdsQuerySet
 from data_sources.data_source import DataSource
 from data_sources.exception_handlers.exception_handler import ExceptionHandler
+from data_sources.keys import ENTITIES
 from data_sources.operations.operation import Operation
 from data_sources.operations.result_fetcher import FromMetaResultFetcher, SingleEntityResultFetcher
 from data_sources.operations_params import InlineParam
+from data_sources.operations_results import ReturnAsOperationResult
 from data_sources.shortcuts import get_data_for_operations
 
 
@@ -27,7 +33,7 @@ def fetch_entities_for_queryset_operations(
         operations=[
             *operations,
             AllFetchQuerySet(),
-            FromMetaResultFetcher(key=DataSourceKeys.ENTITIES),
+            FromMetaResultFetcher(key=ENTITIES),
         ],
         initial_data=initial_data,
     )
@@ -42,7 +48,7 @@ def fetch_single_for_queryset_operations(
         operations=[
             *operations,
             SingleFetchQuerySet(),
-            FromMetaResultFetcher(key=DataSourceKeys.ENTITIES),
+            FromMetaResultFetcher(key=ENTITIES),
         ],
         initial_data=initial_data,
         exception_handlers=exception_handlers,
@@ -57,7 +63,7 @@ def fetch_first_for_queryset_operations(
         operations=[
             *operations,
             FirstFetchQuerySet(),
-            FromMetaResultFetcher(key=DataSourceKeys.ENTITIES),
+            FromMetaResultFetcher(key=ENTITIES),
         ],
         initial_data=initial_data,
     )
@@ -70,7 +76,7 @@ def get_queryset_for_queryset_operations(
     return get_data_for_operations(
         operations=[
             *operations,
-            FromMetaResultFetcher(key=data_sources.contrib.django.keys.QUERYSET),
+            FromMetaResultFetcher(key=QUERYSET),
         ],
         initial_data=initial_data,
     )
@@ -85,7 +91,7 @@ def get_iterator_for_queryset_operations(
         operations=[
             *operations,
             QuerySetIterator(chunk_size=chunk_size),
-            FromMetaResultFetcher(key=data_sources.contrib.django.keys.QUERYSET),
+            FromMetaResultFetcher(key=QUERYSET),
         ],
         initial_data=initial_data,
     )
@@ -115,8 +121,7 @@ def get_exists_for_queryset_operations(
     return get_data_for_operations(
         operations=[
             *operations,
-            ExistsFetchQuerySet(result_key='_exists'),
-            FromMetaResultFetcher(key='_exists'),
+            ExistsFetchQuerySet(result=ReturnAsOperationResult()),
         ],
         initial_data=initial_data,
         exception_handlers=exception_handlers,
@@ -130,8 +135,7 @@ def get_count_for_queryset_operations(
     return get_data_for_operations(
         operations=[
             *operations,
-            CountFetchQuerySet(),
-            FromMetaResultFetcher(key=DataSourceKeys.ENTITIES),
+            CountFetchQuerySet(result=ReturnAsOperationResult()),
         ],
         initial_data=initial_data,
     )
@@ -144,12 +148,12 @@ def apply_queryset_operations_on_queryset(
     initial_params: Optional[Iterable[tuple[str, Any]]] = None,
 ):
     if initial_params is None:
-        initial_params = ((data_sources.contrib.django.keys.QUERYSET, queryset),)
+        initial_params = ((QUERYSET, queryset),)
 
     data_source = DataSource(
         operations=[
             *operations,
-            FromMetaResultFetcher(key=data_sources.contrib.django.keys.QUERYSET),
+            FromMetaResultFetcher(key=QUERYSET),
         ]
     )
     queryset, _ = data_source.get_data(initial_data=initial_data, initial_params=initial_params)
@@ -163,12 +167,12 @@ def apply_modify_entities_operations_on_queryset(
     initial_params: Optional[Iterable[tuple[str, Any]]] = None,
 ):
     if initial_params is None:
-        initial_params = ((DataSourceKeys.ENTITIES, entities),)
+        initial_params = ((ENTITIES, entities),)
 
     data_source = DataSource(
         operations=[
             *operations,
-            FromMetaResultFetcher(key=DataSourceKeys.ENTITIES),
+            FromMetaResultFetcher(key=ENTITIES),
         ]
     )
     queryset, _ = data_source.get_data(initial_data=initial_data, initial_params=initial_params)
